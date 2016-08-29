@@ -9,7 +9,7 @@ checking_data = [0.01,0.99]
 
 layers = [2, 2, 2]
 
-epochs = 10000
+epochs = 100000
 
 learning_rate = 0.5
 

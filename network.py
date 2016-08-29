@@ -1,7 +1,6 @@
 import numpy as np
 import random
 
-
 class network(object):
 
     def __init__(self, training_data, checking_data, layers, epochs, learning_rate, biases, weights):
@@ -10,8 +9,13 @@ class network(object):
         self.layers = layers
         self.epochs = epochs
         self.learning_rate = learning_rate
-        self.biases = biases #add random generation
-        self.weights = weights
+        self.biases = biases 
+        self.weights = weights #add random generation
+        """
+        self.biases = [np.random.randn(y, 1) for y in layers[1:]]
+        self.weights = [np.random.randn(y, x)
+                        for x, y in zip(layers[:-1], layers[1:])]
+        """
         self.all_outputs = []
 
     def feedforward(self, data, layer_count):
@@ -65,7 +69,7 @@ class network(object):
         #do the rest
 
 
-
+        #for l in range(2,-len(layers),1):
 
         for i in range(self.layers[-2]):
 
@@ -107,7 +111,7 @@ class network(object):
 
             self.backprop()
 
-            if i % 10000 == 0:
+            if i % (self.epochs/10) == 0:
                 print(('epoch: ' + str(i) + ', MSE: ' + str(error)) )
 
             """
@@ -126,6 +130,7 @@ class network(object):
 
             self.all_outputs = [] #reset outputs
 
+        print('')
         print('outputs at final epoch:')
         print('')
         print(outputs)
