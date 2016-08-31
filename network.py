@@ -15,11 +15,12 @@ class network(object):
 
         # self.biases = [np.random.randn(y, 1) for y in layers[1:]]
         # self.weights = [np.random.randn(y, x) for x, y in zip(layers[:-1], layers[1:])]
-
+        """
         print('biases:')
         print(self.biases)
         print('weights')
         print(self.weights)
+        """
         self.all_outputs = []
 
     def feedforward(self, data, layer_count):
@@ -54,11 +55,9 @@ class network(object):
             delta.append(-(self.checking_data[i] - self.all_outputs[-1][
                          i]) * sigmoid_prime(self.all_outputs[-1][i]))
 
-        neuron_count_previous = self.layers[-2]
-
         for i in range(len(self.weights[-1]) / 2):
             discard_delta = delta[i]
-            for j in range(neuron_count_previous):
+            for j in range(self.layers[-2]):
                 tmp_weights.append(
                     self.weights[-1][2 * i + j] - self.learning_rate * discard_delta * self.all_outputs[-2][j])
 
@@ -77,9 +76,8 @@ class network(object):
 
             for i in range(len(self.weights[-l]) / 2):
                 discard_delta = deltah[i]
-                for j in range(neuron_count_previous):
-                    tmp_weights.append(
-                        self.weights[-l][2 * i + j] - self.learning_rate * discard_delta * self.all_outputs[-l - 1][j])
+                for j in range(self.layers[-l]):
+                    tmp_weights.append(self.weights[-l][2 * i + j] - self.learning_rate * discard_delta * self.all_outputs[-l - 1][j])
 
         chunksize = 4
         self.weights = list(reversed(
