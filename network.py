@@ -15,37 +15,39 @@ class network(object):
 
         self.biases = [uniform(y, 1) for y in layers[1:]]
 
-        number_of_weights = []
+        self.number_of_weights = []
         for i in range(len(layers) - 1):
-            number_of_weights.append(layers[i] * layers[i + 1])
+            self.number_of_weights.append(layers[i] * layers[i + 1])
 
         self.weights = []
-        for k in range(len(number_of_weights)):
+        for k in range(len(self.number_of_weights)):
             self.weights.append([uniform(0, 1)
-                                 for i in range(number_of_weights[k])])
+                                 for i in range(self.number_of_weights[k])])
 
-        
         print('biases:')
         print(self.biases)
         print('weights')
         print(self.weights)
         print('\n')
-        
 
         self.all_outputs = []
 
     def div_to_chunks(self, tmp_weights):
 
-        chunksize = len(self.weights[0])
-        self.weights = list(reversed(
-            [tmp_weights[i:i + chunksize] for i in xrange(0, len(tmp_weights), chunksize)]))
+        index = 0
+        self.weights = []
+        for i in range(len(self.number_of_weights)):
+            self.weights.append(
+                tmp_weights[index:index + self.number_of_weights[i]])
+            index += self.number_of_weights[i]
+
+        self.weights = list(reversed(self.weights))
 
     def feedforward(self, data, layer_count):
 
         if layer_count == 1:
             data = self.training_data
 
-        # check for base case, e.g when calculated output values
         if layer_count != len(self.layers):
             outputs = []
             for neuron in range(self.layers[layer_count]):
@@ -58,7 +60,7 @@ class network(object):
 
         return data
 
-    def backprop(self):  # dE/dw = -(target(o1)-out(o1)) * out(o1)*(1-out(o1))*out(h1) , out(o1)*(1-out(o1)) = sigmoid_prime(out(o1))
+    def backprop(self):
 
         tmp_weights = []
         self.all_outputs = [self.training_data] + self.all_outputs
@@ -78,19 +80,24 @@ class network(object):
                 tmp_weights.append(
                     self.weights[-1][self.layers[-2] * i + j] - self.learning_rate * discard_delta * self.all_outputs[-2][j])
 
-        # do the other layers, going thru network backwards
+        # do the other layers, going through network backwards
 
         for l in range(2, len(self.layers)):
+
+            print(l)
 
             for i in range(self.layers[-l]):
 
                 delta_tmp = sum(delta[k] * self.weights[-l + 1][k * self.layers[-l + 1] + i]
-                                for k in range(self.layers[-l + 1]))
+                                for k in range(self.layers[-l + 1]))  # seg fault here
 
                 deltah.append(
                     delta_tmp * sigmoid_prime(self.all_outputs[-l][i]))
 
-            for i in range(len(self.weights[-l]) / 2):
+            for i in range(self.layers[-l]):
+
+                # print(i)
+
                 discard_delta = deltah[i]
                 for j in range(self.layers[-l - 1]):
                     tmp_weights.append(
@@ -98,14 +105,13 @@ class network(object):
 
             delta = deltah
 
-            self.div_to_chunks(tmp_weights)
+        self.div_to_chunks(tmp_weights)
 
     def run(self):
         error = 0
 
         for i in range(1, self.epochs + 1):  # , self.epochs
             outputs = self.feedforward(self.training_data, 1)
-            # print(outputs)
             error = sum(
                 0.5 * np.square(self.checking_data[i] - outputs[i]) for i in range(len(outputs)))
 

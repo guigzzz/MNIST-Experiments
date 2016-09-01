@@ -7,7 +7,7 @@ training_data = [0.05, 0.1]
 
 checking_data = [0.01, 0.99]
 
-layers = [2, 2, 2]
+layers = [2, 4, 2, 2]
 
 epochs = 10000
 
