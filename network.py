@@ -4,7 +4,7 @@ from random import uniform
 
 class network(object):
 
-    def __init__(self, training_data, checking_data, layers, epochs, learning_rate):
+    def __init__(self, training_data, checking_data, layers, epochs, learning_rate, net_type):
         self.training_data = training_data
         self.checking_data = checking_data
         self.layers = layers
@@ -13,7 +13,7 @@ class network(object):
         # self.biases = biases
         # self.weights = weights  # add random generation
 
-        self.biases = [uniform(y, 1) for y in layers[1:]]
+        self.biases = [uniform(0, 1) for y in layers[1:]]
 
         self.number_of_weights = []
         for i in range(len(layers) - 1):
@@ -30,9 +30,15 @@ class network(object):
         print(self.weights)
         print('\n')
 
+        self.number_of_weights = list(reversed(self.number_of_weights))
+
         self.all_outputs = []
+        self.epoch = 0
+        self.net_type = net_type
 
     def div_to_chunks(self, tmp_weights):
+
+        #print(tmp_weights)
 
         index = 0
         self.weights = []
@@ -43,10 +49,12 @@ class network(object):
 
         self.weights = list(reversed(self.weights))
 
-    def feedforward(self, data, layer_count):
+        #print(self.weights)
+
+    def feedforward(self, data, layer_count, starting_data):
 
         if layer_count == 1:
-            data = self.training_data
+            data = starting_data
 
         if layer_count != len(self.layers):
             outputs = []
@@ -56,14 +64,13 @@ class network(object):
                 outputs.append(output)
 
             self.all_outputs.append(outputs)
-            return self.feedforward(outputs, layer_count + 1)
+            return self.feedforward(outputs, layer_count + 1, starting_data)
 
         return data
 
     def backprop(self):
 
         tmp_weights = []
-        self.all_outputs = [self.training_data] + self.all_outputs
 
         # do network output layer
 
@@ -84,8 +91,6 @@ class network(object):
 
         for l in range(2, len(self.layers)):
 
-            print(l)
-
             for i in range(self.layers[-l]):
 
                 delta_tmp = sum(delta[k] * self.weights[-l + 1][k * self.layers[-l + 1] + i]
@@ -94,14 +99,14 @@ class network(object):
                 deltah.append(
                     delta_tmp * sigmoid_prime(self.all_outputs[-l][i]))
 
-            for i in range(self.layers[-l]):
+            #print(self.all_outputs)
 
-                # print(i)
+            for i in range(self.layers[-l]):
 
                 discard_delta = deltah[i]
                 for j in range(self.layers[-l - 1]):
                     tmp_weights.append(
-                        self.weights[-l][self.layers[-l - 1] * i + j] - self.learning_rate * discard_delta * self.all_outputs[-l - 1][j])
+                        self.weights[-l][self.layers[- l - 1] * i + j] - self.learning_rate * discard_delta * self.all_outputs[-l - 1][j])
 
             delta = deltah
 
@@ -110,20 +115,40 @@ class network(object):
     def run(self):
         error = 0
 
-        for i in range(1, self.epochs + 1):  # , self.epochs
-            outputs = self.feedforward(self.training_data, 1)
-            error = sum(
-                0.5 * np.square(self.checking_data[i] - outputs[i]) for i in range(len(outputs)))
+        for self.epoch in range(1, self.epochs + 1):  # , self.epochs
+
+            if self.net_type == 'gate':
+                outputs = self.feedforward([], 1, self.training_data[
+                    (self.epoch - 1) % 4])
+                error = sum(
+                    0.5 * np.square(self.checking_data[(self.epoch - 1) % 4] - outputs[k]) for k in range(len(outputs)))
+                self.all_outputs = [self.training_data[
+                    (self.epoch - 1) % 4]] + self.all_outputs
+
+            elif self.net_type == 'test':
+                outputs = self.feedforward([], 1, self.training_data)
+                error = sum(
+                    0.5 * np.square(self.checking_data[k] - outputs[k]) for k in range(len(outputs)))
+                self.all_outputs = [self.training_data] + self.all_outputs
 
             self.backprop()
 
-            if i % (self.epochs / 10) == 0:
-                print(('epoch: ' + str(i) + ', MSE: ' +
-                       str(error) + ', outputs: ' + str(outputs)))
-
-            # print([self.training_data] + self.all_outputs)
+            if self.epoch % (self.epochs / 10) == 0:
+                print(('epoch: ' + str(self.epoch) + ', MSE: ' +
+                       str(error)))  # + ', outputs: ' + str(outputs)
 
             self.all_outputs = []  # reset outputs
+
+        print('')
+        print('final outputs:')
+        if self.net_type == 'gate':
+            for i in range(len(self.training_data)):
+                print('inputs: ' + str(self.training_data[i]) + ", output: " + str(
+                    self.feedforward([], 1, self.training_data[i])))
+
+        elif self.net_type == 'test':
+            print('inputs: ' + str(self.training_data) + ", output: " + str(
+                self.feedforward([], 1, self.training_data)))
 
 
 def sigmoid(z):
