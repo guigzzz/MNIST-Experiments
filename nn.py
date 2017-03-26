@@ -17,16 +17,16 @@ class network(object):
                        ]
 
         self.neuron_values = [np.ones(n+1) for n in layers]
-        self.befactiv = self.neuron_values
-
+        self.befactiv = [np.ones(n+1) for n in layers]
+        self.delta = [np.ones(n+1) for n in layers]
+        
         print('weights')
         print(self.weights)
         print('neuron values')
         print(self.neuron_values)
         print('\n')
 
-        self.delta = self.neuron_values
-
+        
     def sigmoid(self,z):
         return 1.0 / (1.0 + np.exp(-z))
 
@@ -48,8 +48,10 @@ class network(object):
         self.delta[len(self.layers)-1][1:] = \
             (self.neuron_values[ len(self.layers)-1 ][1:] - label) \
                 * self.sigmoid_prime(self.neuron_values[ len(self.layers)-1 ][1:])
-
+        #print "deltas"
         #print self.delta
+        #print "neuron vals"
+        #print self.neuron_values
 
         #all other layers
         for i in range(len(self.layers)-2,-1,-1):
@@ -82,12 +84,11 @@ class network(object):
 
 
 
-train_data = [[1,2,3],[3,2,1]]
-labels = [1,-1]
+train_data = [[0,0],[0,1],[1,0],[1,1]]
+labels = [-1,-1,-1,1]
 layers = [3,3,1]
 net = network(train_data,labels,layers,0.7,1000)
-#net.train()
-net.feedforward(train_data[0])
-net.backpropagate(labels[0])
+net.train()
+#net.feedforward(train_data[0])
+#net.backpropagate(labels[0])
 print net.neuron_values
-[np.ones(n+1) for n in layers]
