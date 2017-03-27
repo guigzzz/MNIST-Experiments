@@ -1,33 +1,28 @@
-import network
+from nn import network
+import numpy as np
 
+train_data = []
+f = open('zip.train')
+for line in f:
+    curline = line.split(' ')[:-2]
+    if (float(curline[0])==2.0) | (float(curline[0])==8.0):
+        train_data.append([float(x) for x in curline])
+f.close()
+for data in train_data:
+    if data[0]==2:
+        data[0]=0
+    elif data[0]==8:
+        data[0]=1
 
-def start_net(net_type):
+train_data = np.array(train_data)
+labels = train_data[:,0]
+print labels
+train_data = train_data[:,1:]
+layers = [256,256,1]
 
-    if net_type == 'test':
+'''train_data = [[0,0],[0,1],[1,0],[1,1]]
+labels = [0,1,1,0]
+layers = [2,2,1]'''
 
-        training_data = [0.05, 0.1]
-        checking_data = [0.01, 0.99]
-        layers = [2, 2, 2]
-
-    elif net_type == 'gate':
-        training_data = [[0, 0], [0, 1], [1, 0], [1, 1]]
-        checking_data = [0, 0, 0, 1]
-        layers = [2, 1, 1]
-
-    epochs = 10000
-
-    learning_rate = 10
-
-    # initialise network
-
-    net = network.network(training_data, checking_data, layers, epochs,
-                          learning_rate, net_type)
-
-    # run network
-
-    net.run()
-
-
-# net_type = 'test'
-net_type = 'gate'
-start_net(net_type)
+net = network(train_data,labels,layers,0.7,1000)
+net.train()
