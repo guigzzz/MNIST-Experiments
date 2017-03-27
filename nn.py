@@ -1,6 +1,4 @@
 import numpy as np
-from random import uniform
-
 
 class network(object):
 
@@ -115,17 +113,3 @@ layers = [2,2,1]'''
 
 net = network(train_data,labels,layers,0.7,1000)
 net.train()
-#net.feedforward(train_data[0])
-#net.backpropagate(labels[0])
-net.predict(train_data[0])
-print labels[0]
-net.predict(train_data[1])
-print labels[1]
-net.predict(train_data[2])
-print labels[2]
-net.predict(train_data[3])
-print labels[3]
-'''print "neuron vals"
-print net.neuron_values
-print "delta"
-print net.delta'''
