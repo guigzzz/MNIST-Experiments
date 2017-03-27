@@ -49,5 +49,5 @@ labels = [0,1,2,3]
 layers = [1,2,1]'''
 
 net = network(train_data,classes,layers,0.2,1000)
-#net.train()
-net.crossvalidate(10,True)
+net.train()
+#net.crossvalidate(10,True)

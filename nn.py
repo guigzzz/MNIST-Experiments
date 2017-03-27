@@ -2,14 +2,14 @@ import numpy as np
 
 class network(object):
 
-    def __init__(self, train_data, labels, layers,learning_rate, epochs):
+    def __init__(self, train_data, labels, layers, learning_rate, epochs):
         self.train_data = train_data
 
         input_size = len(train_data[0])
-        if type(labels[0])==list:
-            output_size=len(labels[0])
+        if type(labels[0]) == list:
+            output_size = len(labels[0])
         else:
-            output_size=1
+            output_size = 1
 
         self.labels = labels
         self.layers = [input_size] + layers + [output_size]
@@ -26,7 +26,6 @@ class network(object):
         self.z = [np.ones(n+1) for n in self.layers]
         self.delta = [np.ones(n) for n in self.layers[1:]]
 
-        
     def sigmoid(self,z):
         return 1.0 / (1.0 + np.exp(-z))
 
@@ -62,7 +61,7 @@ class network(object):
         for i in range(self.epochs):
 
             if i%(round(self.epochs/10))==0:
-                print("current epoch: " + str(i))
+                print("current epoch: " + str(i) + "/" + str(self.epochs))
 
             for j in range(len(self.train_data)):
                 self.feedforward(self.train_data[j])
