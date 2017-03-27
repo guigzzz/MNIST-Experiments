@@ -1,4 +1,4 @@
-# neural_network
+# neural network
 
 basic implementation of feed forward and back propagation algorithms in python using numpy for the linear algebra
 
