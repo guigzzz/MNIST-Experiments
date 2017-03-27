@@ -20,14 +20,6 @@ class network(object):
         self.neuron_values = [np.ones(n+1) for n in layers]
         self.z = [np.ones(n+1) for n in layers]
         self.delta = [np.ones(n) for n in layers[1:]]
-        
-        '''print('weights')
-        print(self.weights)
-        print('neuron values')
-        print(self.neuron_values)
-        print "layers"
-        print self.layers
-        print('\n')'''
 
         
     def sigmoid(self,z):
@@ -48,48 +40,44 @@ class network(object):
          #output layer
         self.delta[ -1 ] = (self.neuron_values[ -1 ][1:] - label) * \
                                 self.sigmoid_prime(self.z[ -1 ][1:])
-            
-        '''print "deltas"
-        print self.delta'''
 
         #all other layers
         for i in range(2,self.num_layers):
-            '''print "cur weights"
-            print self.weights[-i+1][:,1:].T
-            print"cur delta"
-            print self.delta[-i+1]
-            print "cur z"
-            print self.z[-i][1:]'''
 
             self.delta[-i] = \
                 self.sigmoid_prime(self.z[-i+1][1:]) * \
                     np.dot(self.weights[-i+1][:,1:].T,self.delta[-i+1])
 
-        '''print '\n'
-        print "weight update"
-        print "deltas"
-        print self.delta
-        print "neuron vals"
-        print self.neuron_values'''
         #update weights
         for i in range(0,self.num_layers-1):
-            '''print"neuron vals"
-            print np.matrix(self.neuron_values[i]).T
-            print "cur deltas"
-            print np.matrix(self.delta[i])
-            print "cur weights"
-            print self.weights[i]
-            print "res"
-            print np.dot(np.matrix(self.delta[i]).T,np.matrix(self.neuron_values[i]))''' 
-
             self.weights[i] -= self.learning_rate *  np.dot(np.matrix(self.delta[i]).T,np.matrix(self.neuron_values[i])) 
      
 
     def train(self):
+        predicted_labels = []
         for i in range(self.epochs):
             for j in range(len(self.train_data)):
                 self.feedforward(self.train_data[j])
                 self.backpropagate(self.labels[j])
+
+                for k in range(1,len(self.neuron_values[-1])):
+                    if self.neuron_values[-1][k] > 0.9:
+                        self.neuron_values[-1][k] = 1
+                    elif self.neuron_values[-1][k] < 0.1:
+                        self.neuron_values[-1][k] = 0
+                        
+                predicted_labels.append(neuron_values[-1][1:])
+
+            print error(predicted_labels,self.labels)
+            
+    def error(self,predicted,ref):
+        return sum(int(pred==ref) for pred,re in zip(predicted,ref))/len(ref)
+
+    def MSE(self,predicted_labels,ref_labels):
+        error = 0
+        for pred,ref in zip(predicted_labels,ref_labels):
+            error += (pred-ref)**2
+        return error/len(predicted_labels)
 
     def predict(self,input):
         self.feedforward(input)
