@@ -45,6 +45,5 @@ train_limit = int(round(0.7*len(train_data)))
 
 net = network(train_data[:train_limit],classes[:train_limit],layers,0.2,1000)
 net.train()
-predictions = net.predict(train_data[train_limit+1:])
-print "test error: " + str(net.error(predictions,classes[train_limit+1:]))
+net.testmodel(train_data[train_limit+1:],classes[train_limit+1:],True)
 #net.crossvalidate(10,True)

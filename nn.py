@@ -72,7 +72,7 @@ class network(object):
                 self.backpropagate(self.labels[j])
             
     def error(self,predicted,ref):
-        errorlst = [int(list(pred)!=list(re)) for pred,re in zip(self.roundclasses(predicted),ref)]
+        errorlst = [int(list(pred)!=list(re)) for pred,re in zip(predicted,ref)]
         return float(sum(errorlst))/len(errorlst)
 
     def MSE(self,predicted_labels,ref_labels):
@@ -94,7 +94,14 @@ class network(object):
         for i in range(len(input)):
             output.append([int(round(x)) for x in input[i]])
         return output
-        
+
+    def testmodel(self,test_set,test_classes,classround = False):
+        if classround:
+            predictions = self.roundclasses(self.predict(test_set))
+            print "test error: " + str(self.error(predictions,test_classes))
+        else:
+            predictions = self.predict(test_set)
+            print "test error: " + str(self.error(predictions,test_classes))
 
     def crossvalidate(self,folds,randomise=False):
         if randomise:
