@@ -2,4 +2,5 @@ nn.pyc
 zip.train
 zip.test
 .vscode
+.vscode/settings.json
 np
