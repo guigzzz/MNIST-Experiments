@@ -23,14 +23,15 @@ class network(object):
                        ]
 
         self.neuron_values = [np.ones(n+1) for n in self.layers]
-        self.z = [np.ones(n+1) for n in self.layers]
+        self.z = [np.ones(n) for n in self.layers]
         self.delta = [np.ones(n) for n in self.layers[1:]]
 
     def sigmoid(self,z):
         return 1.0 / (1.0 + np.exp(-z))
 
     def sigmoid_prime(self,z):
-        return self.sigmoid(z) * (1 - self.sigmoid(z))
+        sigres = self.sigmoid(z)
+        return sigres * (1 - sigres)
     
     def feedforward(self, input):
 
@@ -38,20 +39,20 @@ class network(object):
 
         for i in range(1,self.num_layers): #layer
 
-            self.z[i][1:] = np.dot(self.weights[i-1],self.neuron_values[i-1])
-            self.neuron_values[i][1:] = self.sigmoid(self.z[i][1:])
+            self.z[i] = np.dot(self.weights[i-1],self.neuron_values[i-1])
+            self.neuron_values[i][1:] = self.sigmoid(self.z[i])
         
 
     def backpropagate(self,label):
          #output layer
         self.delta[ -1 ] = (self.neuron_values[ -1 ][1:] - label) * \
-                                self.sigmoid_prime(self.z[ -1 ][1:])
+                                self.sigmoid_prime(self.z[ -1 ])
 
         #all other layers
         for i in range(2,self.num_layers):
 
             self.delta[-i] = \
-                self.sigmoid_prime(self.z[-i][1:]) * \
+                self.sigmoid_prime(self.z[-i]) * \
                     np.dot(self.weights[-i+1][:,1:].T,self.delta[-i+1])
 
         #update weights
@@ -85,7 +86,6 @@ class network(object):
         output = []
         for datapoint in input:
             self.feedforward(datapoint)
-            
             output.append(list(self.neuron_values[-1][1:]))
         return output
 
@@ -143,4 +143,3 @@ class network(object):
         test_predictions = self.predict(test_data)
         test_predictions = self.roundclasses(test_predictions)
         print "test error: " + str(self.error(test_predictions,test_labels))
-
