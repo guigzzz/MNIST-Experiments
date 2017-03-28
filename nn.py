@@ -61,11 +61,20 @@ class network(object):
      
 
     def train(self):
+        '''last_err = 1
+        self.learning_rate = 3'''
         print 'training....'
         for i in range(self.epochs):
+            
+            ''' if train_error <= last_err:
+                self.learning_rate *= 1.1
+            else:
+                self.learning_rate *= 0.8
+            last_err = train_error'''
 
             if i%(round(self.epochs/10))==0:
-                print("current epoch: " + str(i) + "/" + str(self.epochs))
+                train_error = self.testmodel(self.train_data,self.labels,True)
+                print("current epoch: " + str(i) + "/" + str(self.epochs) + " train error: " + str(train_error) + " learning rate: " + str(self.learning_rate))
 
             for j in range(len(self.train_data)):
                 
@@ -98,10 +107,10 @@ class network(object):
     def testmodel(self,test_set,test_classes,classround = False):
         if classround:
             predictions = self.roundclasses(self.predict(test_set))
-            print "test error: " + str(self.error(predictions,test_classes))
+            return self.error(predictions,test_classes)
         else:
             predictions = self.predict(test_set)
-            print "test error: " + str(self.error(predictions,test_classes))
+            return self.error(predictions,test_classes)
 
     def crossvalidate(self,folds,randomise=False):
         if randomise:
@@ -111,13 +120,18 @@ class network(object):
             self.train_data = np.array(self.train_data)[perm]
             self.labels = np.array(self.labels)[perm]
 
-        test_data = self.train_data[:int(round(0.3*len(self.train_data)))]
-        self.train_data = self.train_data[int(round(0.3*len(self.train_data)))+1:]
-        test_labels = self.labels[:int(round(0.3*len(self.train_data)))]
-        self.labels = self.labels[int(round(0.3*len(self.train_data)))+1:]
+        train_limit = int(round(0.7*len(self.train_data)))
+
+        test_data = self.train_data[train_limit+1:]
+        self.train_data = self.train_data[:train_limit]
+        test_labels = self.labels[train_limit+1:]
+        self.labels = self.labels[:train_limit]
 
         slices = [self.train_data[i::folds] for i in range(folds)]
         label_slices = [self.labels[i::folds] for i in range(folds)]
+
+        best_weights = []
+        best_error = 1
 
         for k in range(len(slices)):
             self.train_data = np.concatenate(np.array(slices)[np.arange(len(slices))!=k])
@@ -128,18 +142,19 @@ class network(object):
             validation_labels = label_slices[k]
 
             self.train()
-            predictions = self.predict(validation)
-            print "predictions"
-            print predictions
-            predictions = self.roundclasses(predictions)
-            print "validation error: " + str(self.error(predictions,validation_labels))
+            err = self.testmodel(validation,validation_labels,True)
+            print "validation error: " + str(err)
+
+            if err<best_error:
+                best_error = err
+                best_weights = list(self.weights)
 
             self.weights = [
                         np.random.rand(self.layers[k+1],self.layers[k]+1)
                         for k in range(len(self.layers)-1)
                        ]
+        
+        self.weights = best_weights
 
-
-        test_predictions = self.predict(test_data)
-        test_predictions = self.roundclasses(test_predictions)
-        print "test error: " + str(self.error(test_predictions,test_labels))
+        te = self.testmodel(test_data,test_labels,True)
+        print "test error: " + str(te)

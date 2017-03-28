@@ -4,3 +4,4 @@ zip.test
 .vscode
 .vscode/settings.json
 np
+mnist_data
