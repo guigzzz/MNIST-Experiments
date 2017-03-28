@@ -39,6 +39,12 @@ class network(object):
     def sigmoid_prime(self,z):
         sigres = self.sigmoid(z)
         return sigres * (1 - sigres)
+
+    def cross_entropy_cost_prime(self,z,label):
+        return (z - label)/(z * (1 - z))
+
+    def MSE_cost_prime(self,z,label):
+        return z - label
     
     def feedforward(self, input):
 
@@ -52,7 +58,9 @@ class network(object):
 
     def backpropagate(self,label):
         #output layer
-        self.delta[ -1 ] = (self.neuron_values[ -1 ][1:] - label) * \
+        '''self.delta[ -1 ] = self.MSE_cost_prime(self.neuron_values[ -1 ][1:],label) * \
+                                self.sigmoid_prime(self.z[ -1 ])'''
+        self.delta[ -1 ] = self.cross_entropy_cost_prime(self.neuron_values[ -1 ][1:],label) * \
                                 self.sigmoid_prime(self.z[ -1 ])
 
         #all other layers
