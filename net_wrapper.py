@@ -19,12 +19,12 @@ labels = train_data[:,0]
 train_data = train_data[:,1:]
 layers = [256]'''
 
-train_data = []
+data = []
 classes = []
 f = open('iris.data')
 for line in f:
     curline = line.split('\n')[0].split(',')
-    train_data.append([float(x) for x in curline[:-1]])
+    data.append([float(x) for x in curline[:-1]])
     if float(curline[-1])==0.0:
         classes.append([0,0,1])
     elif float(curline[-1])==1.0:
@@ -34,20 +34,17 @@ for line in f:
 f.close()
 layers = [10]
 
-'''train_data = np.array(train_data)
-labels = train_data[:,0]
-print labels
-train_data = train_data[:,1:]
-layers = [256,256,1]'''
+perm = np.random.permutation(len(data))
+train_data = np.array(data)[perm]
+classes = np.array(classes)[perm]
 
-'''train_data = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
-labels = [0,0,0,0,0,0,0,1]
-layers = []'''
+train_data = [list(x) for x in train_data]
+classes = [list(x) for x in classes]
 
-'''train_data = [[0],[1],[2],[3]]
-labels = [0,1,2,3]
-layers = [1,2,1]'''
+train_limit = int(round(0.7*len(train_data)))
 
-net = network(train_data,classes,layers,0.2,1000)
+net = network(train_data[:train_limit],classes[:train_limit],layers,0.2,1000)
 net.train()
+predictions = net.predict(train_data[train_limit+1:])
+print "test error: " + str(net.error(predictions,classes[train_limit+1:]))
 #net.crossvalidate(10,True)

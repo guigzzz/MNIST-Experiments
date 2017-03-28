@@ -33,9 +33,11 @@ class network(object):
         return self.sigmoid(z) * (1 - self.sigmoid(z))
     
     def feedforward(self, input):
-        self.neuron_values[0] = np.array([1] + input)
+
+        self.neuron_values[0][1:] = input
 
         for i in range(1,self.num_layers): #layer
+
             self.z[i][1:] = np.dot(self.weights[i-1],self.neuron_values[i-1])
             self.neuron_values[i][1:] = self.sigmoid(self.z[i][1:])
         
@@ -47,6 +49,7 @@ class network(object):
 
         #all other layers
         for i in range(2,self.num_layers):
+
             self.delta[-i] = \
                 self.sigmoid_prime(self.z[-i][1:]) * \
                     np.dot(self.weights[-i+1][:,1:].T,self.delta[-i+1])
@@ -64,11 +67,13 @@ class network(object):
                 print("current epoch: " + str(i) + "/" + str(self.epochs))
 
             for j in range(len(self.train_data)):
+                
                 self.feedforward(self.train_data[j])
                 self.backpropagate(self.labels[j])
             
     def error(self,predicted,ref):
-        return sum(int(pred!=re) for pred,re in zip(predicted,ref))/len(ref)
+        errorlst = [int(list(pred)!=list(re)) for pred,re in zip(self.roundclasses(predicted),ref)]
+        return float(sum(errorlst))/len(errorlst)
 
     def MSE(self,predicted_labels,ref_labels):
         error = 0
@@ -80,7 +85,6 @@ class network(object):
         output = []
         for datapoint in input:
             self.feedforward(datapoint)
-            #print self.neuron_values
             
             output.append(list(self.neuron_values[-1][1:]))
         return output
@@ -96,20 +100,40 @@ class network(object):
         if randomise:
             from random import shuffle
             items = list(self.train_data)
-            shuffle(self.train_data)
+            perm = np.random.permutation(len(self.train_data))
+            self.train_data = np.array(self.train_data)[perm]
+            self.labels = np.array(self.labels)[perm]
+
+        test_data = self.train_data[:int(round(0.3*len(self.train_data)))]
+        self.train_data = self.train_data[int(round(0.3*len(self.train_data)))+1:]
+        test_labels = self.labels[:int(round(0.3*len(self.train_data)))]
+        self.labels = self.labels[int(round(0.3*len(self.train_data)))+1:]
 
         slices = [self.train_data[i::folds] for i in range(folds)]
+        label_slices = [self.labels[i::folds] for i in range(folds)]
 
-        for sub in slices:
-            self.train_data = []
-            self.train_data = [self.train_data + sl for sl in slices if sl!=sub]
-            validation = sub
+        for k in range(len(slices)):
+            self.train_data = np.concatenate(np.array(slices)[np.arange(len(slices))!=k])
+            self.train_data = np.array(self.train_data)
 
-            print "train data"
-            print self.train_data
-            print "val"
-            print validation
+            self.labels = np.concatenate(np.array(label_slices)[np.arange(len(slices))!=k])
+            validation = slices[k]
+            validation_labels = label_slices[k]
+
             self.train()
             predictions = self.predict(validation)
+            print "predictions"
+            print predictions
             predictions = self.roundclasses(predictions)
-            print "validation error: " + str(self.error(predictions,self.labels))
+            print "validation error: " + str(self.error(predictions,validation_labels))
+
+            self.weights = [
+                        np.random.rand(self.layers[k+1],self.layers[k]+1)
+                        for k in range(len(self.layers)-1)
+                       ]
+
+
+        test_predictions = self.predict(test_data)
+        test_predictions = self.roundclasses(test_predictions)
+        print "test error: " + str(self.error(test_predictions,test_labels))
+
