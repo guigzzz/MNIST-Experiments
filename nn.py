@@ -12,7 +12,7 @@ class network(object):
             output_size = 1
 
         self.labels = labels
-        self.layers = [input_size] + layers + [output_size]
+        self.layers = np.array([input_size] + layers + [output_size])
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.num_layers = len(self.layers)
@@ -25,6 +25,13 @@ class network(object):
         self.neuron_values = [np.ones(n+1) for n in self.layers]
         self.z = [np.ones(n) for n in self.layers]
         self.delta = [np.ones(n) for n in self.layers[1:]]
+
+    def tanh(self,z):
+        return self.sigmoid(2*z)-self.sigmoid(-2*z)
+    
+    def tanh_prime(self,z):
+        sigres = self.sigmoid(z)
+        return 1 - sigres*sigres
 
     def sigmoid(self,z):
         return 1.0 / (1.0 + np.exp(-z))
@@ -44,7 +51,7 @@ class network(object):
         
 
     def backpropagate(self,label):
-         #output layer
+        #output layer
         self.delta[ -1 ] = (self.neuron_values[ -1 ][1:] - label) * \
                                 self.sigmoid_prime(self.z[ -1 ])
 
