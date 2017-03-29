@@ -15,6 +15,7 @@ class network(object):
         self.layers = np.array([input_size] + layers + [output_size])
         self.epochs = epochs
         self.learning_rate = learning_rate
+        self.cv_starting_rate = learning_rate
         self.num_layers = len(self.layers)
 
         self.weights = [
@@ -58,10 +59,10 @@ class network(object):
 
     def backpropagate(self,label):
         #output layer
-        '''self.delta[ -1 ] = self.MSE_cost_prime(self.neuron_values[ -1 ][1:],label) * \
-                                self.sigmoid_prime(self.z[ -1 ])'''
-        self.delta[ -1 ] = self.cross_entropy_cost_prime(self.neuron_values[ -1 ][1:],label) * \
+        self.delta[ -1 ] = self.MSE_cost_prime(self.neuron_values[ -1 ][1:],label) * \
                                 self.sigmoid_prime(self.z[ -1 ])
+        '''self.delta[ -1 ] = self.cross_entropy_cost_prime(self.neuron_values[ -1 ][1:],label) * \
+                                self.sigmoid_prime(self.z[ -1 ])'''
 
         #all other layers
         for i in range(2,self.num_layers):
@@ -76,19 +77,22 @@ class network(object):
      
 
     def train(self):
-        '''last_err = 1
-        self.learning_rate = 3'''
+        last_err = 1
+        self.learning_rate = self.cv_starting_rate
+        old_weights = []
         print 'training....'
         for i in range(self.epochs):
-            
-            ''' if train_error <= last_err:
+            train_error = self.testmodel(self.train_data,self.labels,True)
+            if train_error <= last_err:
                 self.learning_rate *= 1.1
+                old_weights = list(self.weights)
             else:
-                self.learning_rate *= 0.8
-            last_err = train_error'''
+                self.learning_rate *= 0.5
+                self.weights = list(old_weights)
+            last_err = train_error
 
             if i%(round(self.epochs/10))==0:
-                train_error = self.testmodel(self.train_data,self.labels,True)
+                
                 print("current epoch: " + str(i) + "/" + str(self.epochs) + " train error: " + str(train_error) + " learning rate: " + str(self.learning_rate))
 
             for j in range(len(self.train_data)):
