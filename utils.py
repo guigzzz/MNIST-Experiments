@@ -1,5 +1,10 @@
 import struct
 
+def mapto1hot(input,class_count):
+    tmp = [0]*class_count
+    tmp[int(input)-1]=1
+    return tmp
+
 def import_mnist(dataset_path,labelset_path):
 
     with open(labelset_path, 'rb') as f:
