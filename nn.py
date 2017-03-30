@@ -18,14 +18,17 @@ class network(object):
         self.cv_starting_rate = learning_rate
         self.num_layers = len(self.layers)
 
-        self.weights = [
-                        np.random.rand(self.layers[k+1],self.layers[k]+1)
-                        for k in range(len(self.layers)-1)
-                       ]
+        self.init_weights()
 
         self.neuron_values = [np.ones(n+1) for n in self.layers]
         self.z = [np.ones(n) for n in self.layers]
         self.delta = [np.ones(n) for n in self.layers[1:]]
+
+    def init_weights(self):
+        self.weights = [
+                        np.random.rand(self.layers[k+1],self.layers[k]+1)
+                        for k in range(len(self.layers)-1)
+                       ]
 
     def tanh(self,z):
         return self.sigmoid(2*z)-self.sigmoid(-2*z)
@@ -41,10 +44,10 @@ class network(object):
         sigres = self.sigmoid(z)
         return sigres * (1 - sigres)
 
-    def cross_entropy_cost_prime(self,z,label):
+    def cross_entropy_cost_prime(z,label):
         return (z - label)/(z * (1 - z))
 
-    def MSE_cost_prime(self,z,label):
+    def MSE_cost_prime(z,label):
         return z - label
     
     def feedforward(self, input):
@@ -57,12 +60,10 @@ class network(object):
             self.neuron_values[i][1:] = self.sigmoid(self.z[i])
         
 
-    def backpropagate(self,label):
+    def backpropagate(self,label,Output_activation = MSE_cost_prime):
         #output layer
-        self.delta[ -1 ] = self.MSE_cost_prime(self.neuron_values[ -1 ][1:],label) * \
+        self.delta[ -1 ] = Output_activation(self.neuron_values[ -1 ][1:],label) * \
                                 self.sigmoid_prime(self.z[ -1 ])
-        '''self.delta[ -1 ] = self.cross_entropy_cost_prime(self.neuron_values[ -1 ][1:],label) * \
-                                self.sigmoid_prime(self.z[ -1 ])'''
 
         #all other layers
         for i in range(2,self.num_layers):
@@ -77,19 +78,19 @@ class network(object):
      
 
     def train(self):
-        last_err = 1
+        '''last_err = 1
         self.learning_rate = self.cv_starting_rate
-        old_weights = []
+        old_weights = []'''
         print 'training....'
         for i in range(self.epochs):
             train_error = self.testmodel(self.train_data,self.labels,True)
-            if train_error <= last_err:
+            '''if train_error <= last_err:
                 self.learning_rate *= 1.1
                 old_weights = list(self.weights)
             else:
                 self.learning_rate *= 0.5
                 self.weights = list(old_weights)
-            last_err = train_error
+            last_err = train_error'''
 
             if i%(round(self.epochs/10))==0:
                 
@@ -131,7 +132,7 @@ class network(object):
             predictions = self.predict(test_set)
             return self.error(predictions,test_classes)
 
-    def crossvalidate(self,folds,randomise=False):
+    def crossvalidate(self,folds,randomise = False):
         if randomise:
             from random import shuffle
             items = list(self.train_data)
@@ -154,7 +155,7 @@ class network(object):
 
         for k in range(len(slices)):
             self.train_data = np.concatenate(np.array(slices)[np.arange(len(slices))!=k])
-            self.train_data = np.array(self.train_data)
+            #self.train_data = np.array(self.train_data)
 
             self.labels = np.concatenate(np.array(label_slices)[np.arange(len(slices))!=k])
             validation = slices[k]
@@ -168,10 +169,7 @@ class network(object):
                 best_error = err
                 best_weights = list(self.weights)
 
-            self.weights = [
-                        np.random.rand(self.layers[k+1],self.layers[k]+1)
-                        for k in range(len(self.layers)-1)
-                       ]
+            self.init_weights()
         
         self.weights = best_weights
 

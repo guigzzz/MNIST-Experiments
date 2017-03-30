@@ -23,4 +23,4 @@ train_data = data[:,:-1]
 layers = [10]
 
 net = network(train_data,classes,layers,0.2,100)
-net.crossvalidate(10,True)
+net.crossvalidate(10,randomise = True)
