@@ -5,3 +5,5 @@ zip.test
 .vscode/settings.json
 np
 mnist_data
+nn.pyc
+utils.pyc
