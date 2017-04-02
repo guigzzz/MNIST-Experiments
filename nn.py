@@ -1,4 +1,10 @@
 import numpy as np
+# todo
+# restructure code so that only structural elements on net creation
+# add training and testing sets to crossvalidation function
+# figure out why MNIST only converges to 8% training error
+# implement variable size minibatch
+# optimise
 
 class network(object):
 

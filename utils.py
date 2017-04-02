@@ -24,4 +24,6 @@ def import_mnist(dataset_path,labelset_path):
     for i in range(size):
         data[i] = raw_data[i * rows * cols : (i + 1) * rows * cols]
 
+    labels = [mapto1hot(x,10) for x in labels]
+
     return data, labels
