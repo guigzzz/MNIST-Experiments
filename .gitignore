@@ -8,3 +8,4 @@ mnist_data
 nn.pyc
 utils.pyc
 MNIST_data
+tf_logs
