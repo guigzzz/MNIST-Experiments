@@ -8,5 +8,5 @@ basic implementation of feed forward and back propagation algorithms in python u
 
 Usage: python net_wrapper.py
 
-Repository also includes a tensorflow implementation of the same network.
-The tensorflow code is packaged in a python object to make it convenient to use
+Repository also includes a tensorflow implementation of the same network in tf_net.py.
+The tensorflow code is packaged in a python class to make it convenient to use, exposing an interface similar to sklearn's models
